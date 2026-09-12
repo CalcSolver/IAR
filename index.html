@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CalcSolver's Digital Museum & Archive</title>
-    <!-- Google Fonts for retro archive vibe -->
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -40,7 +39,6 @@
             padding: 30px;
         }
 
-        /* Header / Archive Stamp */
         header {
             border-bottom: 3px double var(--ink-color);
             padding-bottom: 20px;
@@ -80,7 +78,6 @@
             background: var(--accent-blue);
         }
 
-        /* Search and Filter Section */
         .controls {
             display: flex;
             gap: 10px;
@@ -113,7 +110,6 @@
             border-color: var(--ink-color);
         }
 
-        /* Exhibition Grid (Museum Style Cards) */
         .museum-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -150,7 +146,6 @@
 
         .status-active { color: var(--accent-blue); }
         .status-prototype { color: #b8860b; }
-        .status-abandoned { color: var(--accent-red); }
 
         .artifact-title {
             font-family: 'Special Elite', cursive;
@@ -182,24 +177,21 @@
             padding-top: 12px;
         }
 
-        .artifact-actions a, .artifact-actions button {
+        .artifact-actions a {
             font-family: 'Courier Prime', monospace;
             font-size: 0.8rem;
             text-decoration: none;
             color: var(--ink-color);
             background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px 8px;
             border: 1px solid var(--border-color);
+            padding: 4px 8px;
         }
 
-        .artifact-actions a:hover, .artifact-actions button:hover {
+        .artifact-actions a:hover {
             background: var(--ink-color);
             color: #fff;
         }
 
-        /* Museum Footer / Curatorial Note */
         footer {
             border-top: 1px solid var(--border-color);
             padding-top: 20px;
@@ -217,77 +209,96 @@
         footer a:hover {
             text-decoration: underline;
         }
+
+        .loading-msg {
+            font-family: 'Courier Prime', monospace;
+            font-style: italic;
+            color: var(--meta-color);
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Header -->
         <header>
             <div class="archive-branding">
                 <h1>Everything I’ve Ever Made</h1>
-                <p>Curated Software Artifacts & Repository Museum [Est. 2026]</p>
+                <p>Curated Software Artifacts & Live GitHub Museum [Est. 2026]</p>
             </div>
             <div class="header-links">
                 <a href="https://github.com/CalcSolver" target="_blank">View GitHub Profile ↗</a>
             </div>
         </header>
 
-        <!-- Controls / Search -->
         <div class="controls">
             <input type="text" id="searchInput" class="search-bar" placeholder="Search archive artifacts by name, keyword, or tech..." onkeyup="filterArtifacts()">
             <button class="filter-btn active" onclick="setFilter('all', this)">All Artifacts</button>
-            <button class="filter-btn" onclick="setFilter('active', this)">Active</button>
-            <button class="filter-btn" onclick="setFilter('prototype', this)">Prototype</button>
+            <button class="filter-btn" onclick="setFilter('active', this)">Active / Primary</button>
+            <button class="filter-btn" onclick="setFilter('prototype', this)">Forks / Prototypes</button>
         </div>
 
-        <!-- Exhibition Museum Grid -->
         <div class="museum-grid" id="artifactGrid">
-            
-            <!-- Artifact 1 -->
-            <div class="artifact-card" data-status="active" data-keywords="calculator python tkinter sympy openai math">
-                <span class="artifact-tag status-active">Active</span>
-                <div>
-                    <h2 class="artifact-title">CalCulator</h2>
-                    <p class="artifact-desc">An advanced mathematical desktop suite featuring algebraic solvers, vector matrix operations, graphing, and an integrated AI word-problem engine.</p>
-                    <span class="artifact-tech">Python • Tkinter • SymPy • OpenAI</span>
-                </div>
-                <div class="artifact-actions">
-                    <a href="https://github.com/CalcSolver/CalCulator" target="_blank">Source Code</a>
-                </div>
-            </div>
-
-            <!-- Placeholder for future artifacts you can easily add -->
-            <div class="artifact-card" data-status="prototype" data-keywords="web sympy javascript wasm pyodide">
-                <span class="artifact-tag status-prototype">Prototype</span>
-                <div>
-                    <h2 class="artifact-title">SymPy-Web-Pad</h2>
-                    <p class="artifact-desc">A conceptual browser-based scratchpad meant to bring local Python symbolic math engines straight into web interfaces using WebAssembly.</p>
-                    <span class="artifact-tech">JavaScript • WebAssembly • Python</span>
-                </div>
-                <div class="artifact-actions">
-                    <a href="https://github.com/CalcSolver" target="_blank">GitHub Lab</a>
-                </div>
-            </div>
-
+            <div class="loading-msg">Accessing GitHub archives... querying live repositories...</div>
         </div>
 
-        <!-- Footer -->
         <footer>
-            <p>Maintained by <a href="https://github.com/CalcSolver" target="_blank">CalcSolver</a>. Powered by digital persistence & curiosity.</p>
+            <p>Maintained by <a href="https://github.com/CalcSolver" target="_blank">CalcSolver</a>. Powered by live GitHub REST endpoints.</p>
         </footer>
     </div>
 
     <script>
         let currentFilter = 'all';
 
+        async function fetchGitHubRepos() {
+            const grid = document.getElementById('artifactGrid');
+            try {
+                const response = await fetch('https://api.github.com/users/CalcSolver/repos?sort=updated&per_page=100');
+                const repos = await response.json();
+                
+                if (!Array.isArray(repos)) {
+                    throw new Error('API limit or invalid response');
+                }
+
+                grid.innerHTML = '';
+
+                repos.forEach(repo => {
+                    const status = repo.fork ? 'prototype' : 'active';
+                    const tech = repo.language ? repo.language : 'Multi-lang';
+                    const desc = repo.description ? repo.description : 'No repository description cataloged yet.';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'artifact-card';
+                    card.setAttribute('data-status', status);
+                    card.setAttribute('data-keywords', `${repo.name.toLowerCase()} ${tech.toLowerCase()} ${desc.toLowerCase()}`);
+                    
+                    card.innerHTML = `
+                        <span class="artifact-tag status-${status}">${status}</span>
+                        <div>
+                            <h2 class="artifact-title">${repo.name}</h2>
+                            <p class="artifact-desc">${desc}</p>
+                            <span class="artifact-tech">${tech}</span>
+                        </div>
+                        <div class="artifact-actions">
+                            <a href="${repo.html_url}" target="_blank">Source Code ↗</a>
+                            ${repo.homepage ? `<a href="${repo.homepage}" target="_blank">Live Demo ↗</a>` : ''}
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+                
+                filterArtifacts();
+            } catch (error) {
+                grid.innerHTML = `<div class="loading-msg" style="color: var(--accent-red);">Failed to load repositories live. Please check your network or check <a href="https://github.com/CalcSolver" target="_blank">GitHub directly</a>.</div>`;
+            }
+        }
+
         function setFilter(status, buttonElement) {
             currentFilter = status;
-            
-            // Update button active state styling
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             buttonElement.classList.add('active');
-            
             filterArtifacts();
         }
 
@@ -311,6 +322,8 @@
                 }
             });
         }
+
+        window.addEventListener('DOMContentLoaded', fetchGitHubRepos);
     </script>
 </body>
 </html>
