@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CalcSolver's Digital Museum & Archive</title>
+    <title>CalcSolver's Software Library & Museum</title>
     <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -31,7 +31,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: 0 auto;
             background: var(--paper-color);
             border: 2px solid var(--border-color);
@@ -110,9 +110,9 @@
             border-color: var(--ink-color);
         }
 
-        .museum-grid {
+        .library-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
@@ -151,7 +151,7 @@
             font-family: 'Special Elite', cursive;
             font-size: 1.3rem;
             margin-bottom: 10px;
-            padding-right: 60px;
+            padding-right: 70px;
         }
 
         .artifact-desc {
@@ -160,36 +160,46 @@
             margin-bottom: 15px;
         }
 
-        .artifact-tech {
+        .artifact-meta-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             font-family: 'Courier Prime', monospace;
             font-size: 0.75rem;
-            background: #e6e2d6;
-            padding: 4px 8px;
-            display: inline-block;
             margin-bottom: 15px;
+            background: #e6e2d6;
+            padding: 6px 10px;
             border-radius: 2px;
         }
 
         .artifact-actions {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             border-top: 1px dashed var(--border-color);
             padding-top: 12px;
+            flex-wrap: wrap;
         }
 
         .artifact-actions a {
             font-family: 'Courier Prime', monospace;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             text-decoration: none;
             color: var(--ink-color);
             background: none;
             border: 1px solid var(--border-color);
             padding: 4px 8px;
+            border-radius: 2px;
         }
 
         .artifact-actions a:hover {
             background: var(--ink-color);
             color: #fff;
+        }
+
+        .btn-live {
+            background: var(--accent-blue) !important;
+            color: #fff !important;
+            border-color: var(--accent-blue) !important;
         }
 
         footer {
@@ -216,7 +226,7 @@
             color: var(--meta-color);
             grid-column: 1 / -1;
             text-align: center;
-            padding: 20px;
+            padding: 30px;
         }
     </style>
 </head>
@@ -226,49 +236,55 @@
         <header>
             <div class="archive-branding">
                 <h1>Everything I’ve Ever Made</h1>
-                <p>Curated Software Artifacts & Live GitHub Museum [Est. 2026]</p>
+                <p>Digital Software Library, Source Code Index & Live Demos</p>
             </div>
             <div class="header-links">
-                <a href="https://github.com/CalcSolver" target="_blank">View GitHub Profile ↗</a>
+                <a href="https://github.com/CalcSolver" target="_blank">GitHub Profile ↗</a>
             </div>
         </header>
 
         <div class="controls">
-            <input type="text" id="searchInput" class="search-bar" placeholder="Search archive artifacts by name, keyword, or tech..." onkeyup="filterArtifacts()">
-            <button class="filter-btn active" onclick="setFilter('all', this)">All Artifacts</button>
-            <button class="filter-btn" onclick="setFilter('active', this)">Active / Primary</button>
-            <button class="filter-btn" onclick="setFilter('prototype', this)">Forks / Prototypes</button>
+            <input type="text" id="searchInput" class="search-bar" placeholder="Search library catalog by name, code language, or logic..." onkeyup="filterLibrary()">
+            <button class="filter-btn active" onclick="setFilter('all', this)">All Holdings</button>
+            <button class="filter-btn" onclick="setFilter('active', this)">Originals</button>
+            <button class="filter-btn" onclick="setFilter('prototype', this)">Forks / Lab</button>
         </div>
 
-        <div class="museum-grid" id="artifactGrid">
-            <div class="loading-msg">Accessing GitHub archives... querying live repositories...</div>
+        <div class="library-grid" id="libraryGrid">
+            <div class="loading-msg">Accessing GitHub stack registers & compiling library index...</div>
         </div>
 
         <footer>
-            <p>Maintained by <a href="https://github.com/CalcSolver" target="_blank">CalcSolver</a>. Powered by live GitHub REST endpoints.</p>
+            <p>Maintained by <a href="https://github.com/CalcSolver" target="_blank">CalcSolver</a>. Live Demos powered via <a href="https://raw.githack.com" target="_blank">raw.githack.com</a>.</p>
         </footer>
     </div>
 
     <script>
         let currentFilter = 'all';
 
-        async function fetchGitHubRepos() {
-            const grid = document.getElementById('artifactGrid');
+        async function fetchLibraryCatalog() {
+            const grid = document.getElementById('libraryGrid');
             try {
+                // Fetch public repositories sorted by recent updates
                 const response = await fetch('https://api.github.com/users/CalcSolver/repos?sort=updated&per_page=100');
                 const repos = await response.json();
                 
                 if (!Array.isArray(repos)) {
-                    throw new Error('API limit or invalid response');
+                    throw new Error('API limit reached or structure changed');
                 }
 
                 grid.innerHTML = '';
 
                 repos.forEach(repo => {
                     const status = repo.fork ? 'prototype' : 'active';
-                    const tech = repo.language ? repo.language : 'Multi-lang';
-                    const desc = repo.description ? repo.description : 'No repository description cataloged yet.';
-                    
+                    const tech = repo.language || 'Documentation/Mixed';
+                    const desc = repo.description || 'No descriptive catalog text logged for this repository yet.';
+                    const defaultBranch = repo.default_branch || 'main';
+
+                    // Generate a raw.githack live preview link if an index.html file likely exists
+                    // Format: https://raw.githack.com/username/repo/branch/index.html
+                    const githackDemoUrl = `https://raw.githack.com/CalcSolver/${repo.name}/${defaultBranch}/index.html`;
+
                     const card = document.createElement('div');
                     card.className = 'artifact-card';
                     card.setAttribute('data-status', status);
@@ -279,41 +295,50 @@
                         <div>
                             <h2 class="artifact-title">${repo.name}</h2>
                             <p class="artifact-desc">${desc}</p>
-                            <span class="artifact-tech">${tech}</span>
                         </div>
-                        <div class="artifact-actions">
-                            <a href="${repo.html_url}" target="_blank">Source Code ↗</a>
-                            ${repo.homepage ? `<a href="${repo.homepage}" target="_blank">Live Demo ↗</a>` : ''}
+                        <div>
+                            <div class="artifact-meta-row">
+                                <span>Lang: ${tech}</span>
+                                <span>⭐ ${repo.stargazers_count}</span>
+                            </div>
+                            <div class="artifact-actions">
+                                <a href="${repo.html_url}" target="_blank">Source Code ↗</a>
+                                <a href="${githackDrugCheck(githackDemoUrl)}" target="_blank" class="btn-live" title="Attempts to render index.html live using GitHack">Live Demo ↗</a>
+                                ${repo.homepage ? `<a href="${repo.homepage}" target="_blank">Web Link ↗</a>` : ''}
+                            </div>
                         </div>
                     `;
                     grid.appendChild(card);
                 });
                 
-                filterArtifacts();
+                filterLibrary();
             } catch (error) {
-                grid.innerHTML = `<div class="loading-msg" style="color: var(--accent-red);">Failed to load repositories live. Please check your network or check <a href="https://github.com/CalcSolver" target="_blank">GitHub directly</a>.</div>`;
+                grid.innerHTML = `<div class="loading-msg" style="color: var(--accent-red);">Unable to pull live library index. Check your connection or explore via <a href="https://github.com/CalcSolver" target="_blank">GitHub directly</a>.</div>`;
             }
+        }
+
+        // Quick utility helper for safety wrapper labels if needed
+        function githackDrugCheck(url) {
+            return url;
         }
 
         function setFilter(status, buttonElement) {
             currentFilter = status;
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
             buttonElement.classList.add('active');
-            filterArtifacts();
+            filterLibrary();
         }
 
-        function filterArtifacts() {
+        function filterLibrary() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const cards = document.querySelectorAll('.artifact-card');
 
             cards.forEach(card => {
                 const status = card.getAttribute('data-status');
                 const keywords = card.getAttribute('data-keywords');
-                const title = card.querySelector('.artifact-title').innerText.toLowerCase();
-                const desc = card.querySelector('.artifact-desc').innerText.toLowerCase();
-
+                
                 const matchesFilter = (currentFilter === 'all' || status === currentFilter);
-                const matchesSearch = (title.includes(query) || desc.includes(query) || keywords.includes(query));
+                const matchesSearch = keywords.includes(query);
 
                 if (matchesFilter && matchesSearch) {
                     card.style.display = 'flex';
@@ -323,7 +348,7 @@
             });
         }
 
-        window.addEventListener('DOMContentLoaded', fetchGitHubRepos);
+        window.addEventListener('DOMContentLoaded', fetchLibraryCatalog);
     </script>
 </body>
 </html>
